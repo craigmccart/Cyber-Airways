@@ -318,10 +318,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Root endpoint functionality"
-    - "Flight readiness endpoint - All test cases"
+    - "Page Load & Design Verification"
+    - "Form Functionality Testing"
+    - "API Integration Testing - All test cases"
+    - "Footer & Navigation Testing"
+    - "Responsive Elements & Styling Testing"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
