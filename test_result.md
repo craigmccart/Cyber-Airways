@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the Cyber Airways backend API, specifically the root endpoint GET /api/ and the new flight readiness endpoint POST /api/flight-readiness with various test cases including valid/invalid booking references, case handling, and field validation."
+user_problem_statement: "Test the Cyber Airways single-page web application frontend with comprehensive testing scenarios including page load & design verification, form functionality, API integration with various test cases, footer & navigation, and responsive elements & styling."
 
 backend:
   - task: "Root endpoint functionality"
