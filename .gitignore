@@ -71,10 +71,24 @@ agenthub/agents/youtube/db
 **/*.tgz
 *.pack
 *.deb
-*.dylib
 
 # Build caches
 .cache/
 
 # Mobile development
 android-sdk/ 
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
