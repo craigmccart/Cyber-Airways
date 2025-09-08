@@ -65,8 +65,12 @@ jobs:
       env:
         IMAGE_URL: ${{ needs.build-and-push.outputs.image }}
       run: |
-        # Replace the placeholder in the deployment file with the real image URL
-        sed -i "s|AWS_ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com/cyber-airways-app:latest|$IMAGE_URL|" k8s/deployment.yaml
-        
-        # Apply the Kubernetes manifests
+        echo "IMAGE_URL=$IMAGE_URL"
+        if [ -z "$IMAGE_URL" ]; then
+          echo "ERROR: IMAGE_URL is empty. Failing early." >&2
+          exit 1
+        fi
+        # Apply manifests as-is
         kubectl apply -f k8s/.
+        # Update the running deployment image explicitly
+        kubectl set image deployment/cyber-airways-frontend frontend="$IMAGE_URL" --record
