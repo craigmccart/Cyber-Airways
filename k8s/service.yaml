@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cyber-airways-frontend
+  labels:
+    app: cyber-airways-frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: cyber-airways-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
