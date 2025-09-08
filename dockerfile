@@ -15,4 +15,4 @@
     COPY --from=builder /app .
     
     EXPOSE 8080
-    CMD [ "node", "index.js" ] # IMPORTANT: Change this to your app's startup file
+    CMD [ "npm", "start" ]
