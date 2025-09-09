@@ -11,7 +11,7 @@
 # You have access to a file called `test_result.md`. This file contains the complete testing state
 # and history, and is the primary means of communication between main and the testing agent.
 #
-# Main and testing agents must follow this exact format to maintain testing data. 
+# Main and testing agent must follow this exact format to maintain testing data. 
 # The testing data must be entered in yaml format Below is the data structure:
 # 
 ## user_problem_statement: {problem_statement}
