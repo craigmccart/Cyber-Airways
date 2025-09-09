@@ -84,7 +84,6 @@ jobs:
           echo "Docker build successful"
         else
           echo "ERROR: Docker build failed" >&2
-          # Set a failure output so deploy job knows what happened
           echo "image_url=BUILD_FAILED" >> $GITHUB_OUTPUT
           exit 1
         fi
@@ -94,35 +93,15 @@ jobs:
           echo "Docker push successful"
         else
           echo "ERROR: Docker push failed" >&2
-          # Set a failure output so deploy job knows what happened
           echo "image_url=PUSH_FAILED" >> $GITHUB_OUTPUT
           exit 1
         fi
         
-        echo "Setting job output using multiple methods..."
-        
-        # Method 1: Modern GITHUB_OUTPUT (recommended)
-        echo "GITHUB_OUTPUT file path: $GITHUB_OUTPUT"
         echo "image_url=$FULL_IMAGE" >> $GITHUB_OUTPUT
-        
-        # Method 2: Legacy set-output (as fallback)
-        echo "::set-output name=image_url::$FULL_IMAGE"
-        
-        # Method 3: Environment variable (additional fallback)
-        echo "IMAGE_URL=$FULL_IMAGE" >> $GITHUB_ENV
-        
-        echo "All output methods completed. Verifying GITHUB_OUTPUT..."
-        
-        # Verify output was set
-        if [ -f "$GITHUB_OUTPUT" ]; then
-          echo "GITHUB_OUTPUT file exists and contains:"
-          cat $GITHUB_OUTPUT
-          echo "--- End of GITHUB_OUTPUT ---"
-        else
-          echo "ERROR: GITHUB_OUTPUT file does not exist at $GITHUB_OUTPUT"
-        fi
-        
-        echo "Successfully set output via all methods: image_url=$FULL_IMAGE"
+
+    - name: Debug build-image step output
+      run: |
+        echo "build-image output: ${{ steps.build-image.outputs.image_url }}"
 
   deploy:
     name: Deploy to EKS
