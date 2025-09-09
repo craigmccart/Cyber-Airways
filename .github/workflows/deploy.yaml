@@ -32,13 +32,29 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Debug ECR registry
+    - name: Verify ECR login success
       run: |
-        echo "ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}"
-        if [ -z "${{ steps.login-ecr.outputs.registry }}" ]; then
-          echo "ERROR: ECR registry is empty. ECR login likely failed." >&2
+        ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+        echo "Checking ECR login status..."
+        echo "Registry output: $ECR_REGISTRY"
+        if [ -z "$ECR_REGISTRY" ]; then
+          echo "ERROR: ECR login failed - no registry output" >&2
+          echo "This could be due to:" >&2
+          echo "1. Invalid AWS credentials" >&2
+          echo "2. ECR repository doesn't exist" >&2
+          echo "3. Insufficient permissions" >&2
           exit 1
         fi
+        echo "ECR login successful"
+
+    - name: Check Dockerfile exists
+      run: |
+        if [ ! -f "Dockerfile" ]; then
+          echo "ERROR: Dockerfile not found in repository root" >&2
+          ls -la
+          exit 1
+        fi
+        echo "Dockerfile found"
 
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
@@ -63,7 +79,10 @@ jobs:
         FULL_IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         echo "Full image URL: $FULL_IMAGE"
         
+        echo "Starting Docker build..."
         docker build -t "$FULL_IMAGE" .
+        
+        echo "Starting Docker push..."
         docker push "$FULL_IMAGE"
         
         echo "image=$FULL_IMAGE" >> $GITHUB_OUTPUT
