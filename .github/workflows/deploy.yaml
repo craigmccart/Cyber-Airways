@@ -84,6 +84,8 @@ jobs:
           echo "Docker build successful"
         else
           echo "ERROR: Docker build failed" >&2
+          # Set a failure output so deploy job knows what happened
+          echo "image_url=BUILD_FAILED" >> $GITHUB_OUTPUT
           exit 1
         fi
         
@@ -92,6 +94,8 @@ jobs:
           echo "Docker push successful"
         else
           echo "ERROR: Docker push failed" >&2
+          # Set a failure output so deploy job knows what happened
+          echo "image_url=PUSH_FAILED" >> $GITHUB_OUTPUT
           exit 1
         fi
         
@@ -101,7 +105,7 @@ jobs:
         
         # Verify output was set
         echo "GITHUB_OUTPUT contents:"
-        cat $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT || echo "Could not read GITHUB_OUTPUT file"
 
   deploy:
     name: Deploy to EKS
@@ -138,8 +142,10 @@ jobs:
     - name: Deploy to EKS
       run: |
         echo "IMAGE_URL=$IMAGE_URL"
-        if [ -z "$IMAGE_URL" ]; then
-          echo "ERROR: IMAGE_URL is empty. Failing early." >&2
+        if [ -z "$IMAGE_URL" ] || [ "$IMAGE_URL" = "BUILD_FAILED" ] || [ "$IMAGE_URL" = "PUSH_FAILED" ]; then
+          echo "ERROR: Build job failed or IMAGE_URL is empty" >&2
+          echo "IMAGE_URL value: '$IMAGE_URL'"
+          echo "Build job result: ${{ needs.build-and-push.result }}"
           echo "Available outputs from build job:"
           echo "${{ toJson(needs.build-and-push.outputs) }}"
           exit 1
