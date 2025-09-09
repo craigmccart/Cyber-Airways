@@ -15,7 +15,7 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.build-image.outputs.image }}
+      image_url: ${{ steps.build-image.outputs.image_url }}
 
     steps:
     - name: Checkout code
@@ -96,8 +96,8 @@ jobs:
         fi
         
         echo "Setting job output..."
-        echo "image=$FULL_IMAGE" >> $GITHUB_OUTPUT
-        echo "Successfully set output: image=$FULL_IMAGE"
+        echo "image_url=$FULL_IMAGE" >> $GITHUB_OUTPUT
+        echo "Successfully set output: image_url=$FULL_IMAGE"
         
         # Verify output was set
         echo "GITHUB_OUTPUT contents:"
@@ -110,7 +110,7 @@ jobs:
 
     # CORRECTED: The env block is now at the job level
     env:
-      IMAGE_URL: ${{ needs.build-and-push.outputs.image }}
+      IMAGE_URL: ${{ needs.build-and-push.outputs.image_url }}
 
     steps:
     - name: Checkout code
@@ -129,7 +129,7 @@ jobs:
     - name: Debug job outputs
       run: |
         echo "Debugging job outputs:"
-        echo "needs.build-and-push.outputs.image: ${{ needs.build-and-push.outputs.image }}"
+        echo "needs.build-and-push.outputs.image_url: ${{ needs.build-and-push.outputs.image_url }}"
         echo "IMAGE_URL from env: $IMAGE_URL"
         
     - name: Deploy to EKS
