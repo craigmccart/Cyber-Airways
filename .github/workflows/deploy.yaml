@@ -100,12 +100,23 @@ jobs:
         fi
         
         echo "Setting job output..."
+        echo "GITHUB_OUTPUT file path: $GITHUB_OUTPUT"
+        echo "Writing to GITHUB_OUTPUT: image_url=$FULL_IMAGE"
         echo "image_url=$FULL_IMAGE" >> $GITHUB_OUTPUT
-        echo "Successfully set output: image_url=$FULL_IMAGE"
+        echo "Write completed. Verifying..."
         
         # Verify output was set
-        echo "GITHUB_OUTPUT contents:"
-        cat $GITHUB_OUTPUT || echo "Could not read GITHUB_OUTPUT file"
+        if [ -f "$GITHUB_OUTPUT" ]; then
+          echo "GITHUB_OUTPUT file exists"
+          echo "GITHUB_OUTPUT contents:"
+          cat $GITHUB_OUTPUT
+          echo "--- End of GITHUB_OUTPUT ---"
+        else
+          echo "ERROR: GITHUB_OUTPUT file does not exist at $GITHUB_OUTPUT"
+          ls -la "$(dirname "$GITHUB_OUTPUT")" || echo "Parent directory does not exist"
+        fi
+        
+        echo "Successfully set output: image_url=$FULL_IMAGE"
 
   deploy:
     name: Deploy to EKS
