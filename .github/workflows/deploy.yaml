@@ -48,9 +48,15 @@ jobs:
       run: |
         echo "Building Docker image with ECR_REGISTRY: $ECR_REGISTRY"
         echo "IMAGE_TAG: $IMAGE_TAG"
+        echo "ECR_REPOSITORY: $ECR_REPOSITORY"
         
         if [ -z "$ECR_REGISTRY" ]; then
           echo "ERROR: ECR_REGISTRY is empty" >&2
+          exit 1
+        fi
+        
+        if [ -z "$ECR_REPOSITORY" ]; then
+          echo "ERROR: ECR_REPOSITORY is empty" >&2
           exit 1
         fi
         
@@ -61,6 +67,7 @@ jobs:
         docker push "$FULL_IMAGE"
         
         echo "image=$FULL_IMAGE" >> $GITHUB_OUTPUT
+        echo "Successfully set output: image=$FULL_IMAGE"
 
   deploy:
     name: Deploy to EKS
@@ -85,11 +92,19 @@ jobs:
     - name: Configure kubectl
       run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
+    - name: Debug job outputs
+      run: |
+        echo "Debugging job outputs:"
+        echo "needs.build-and-push.outputs.image: ${{ needs.build-and-push.outputs.image }}"
+        echo "IMAGE_URL from env: $IMAGE_URL"
+        
     - name: Deploy to EKS
       run: |
         echo "IMAGE_URL=$IMAGE_URL"
         if [ -z "$IMAGE_URL" ]; then
           echo "ERROR: IMAGE_URL is empty. Failing early." >&2
+          echo "Available outputs from build job:"
+          echo "${{ toJson(needs.build-and-push.outputs) }}"
           exit 1
         fi
         # Replace the placeholder in the deployment file
