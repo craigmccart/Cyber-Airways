@@ -99,24 +99,30 @@ jobs:
           exit 1
         fi
         
-        echo "Setting job output..."
+        echo "Setting job output using multiple methods..."
+        
+        # Method 1: Modern GITHUB_OUTPUT (recommended)
         echo "GITHUB_OUTPUT file path: $GITHUB_OUTPUT"
-        echo "Writing to GITHUB_OUTPUT: image_url=$FULL_IMAGE"
         echo "image_url=$FULL_IMAGE" >> $GITHUB_OUTPUT
-        echo "Write completed. Verifying..."
+        
+        # Method 2: Legacy set-output (as fallback)
+        echo "::set-output name=image_url::$FULL_IMAGE"
+        
+        # Method 3: Environment variable (additional fallback)
+        echo "IMAGE_URL=$FULL_IMAGE" >> $GITHUB_ENV
+        
+        echo "All output methods completed. Verifying GITHUB_OUTPUT..."
         
         # Verify output was set
         if [ -f "$GITHUB_OUTPUT" ]; then
-          echo "GITHUB_OUTPUT file exists"
-          echo "GITHUB_OUTPUT contents:"
+          echo "GITHUB_OUTPUT file exists and contains:"
           cat $GITHUB_OUTPUT
           echo "--- End of GITHUB_OUTPUT ---"
         else
           echo "ERROR: GITHUB_OUTPUT file does not exist at $GITHUB_OUTPUT"
-          ls -la "$(dirname "$GITHUB_OUTPUT")" || echo "Parent directory does not exist"
         fi
         
-        echo "Successfully set output: image_url=$FULL_IMAGE"
+        echo "Successfully set output via all methods: image_url=$FULL_IMAGE"
 
   deploy:
     name: Deploy to EKS
