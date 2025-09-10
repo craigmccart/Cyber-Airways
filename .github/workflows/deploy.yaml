@@ -1,10 +1,10 @@
-name: Build and Push to ECR
-
-# This pipeline now only builds and pushes the Docker image.
-# AWS App Runner will automatically detect the new image in ECR and deploy it.
+name: Build, Scan, and Push to ECR
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -13,13 +13,19 @@ env:
   ECR_REPOSITORY: cyber-airways-app
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Image
+  build-scan-and-push:
+    name: Build, Scan, and Push Docker Image
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    # New Step: Scan Terraform code for security misconfigurations
+    - name: Run tfsec IaC scan
+      uses: aquasecurity/tfsec-action@v1.0.0
+      with:
+        working_directory: terraform
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -32,12 +38,27 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Build Docker image
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image_name=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    # New Step: Scan the built Docker image for vulnerabilities
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ steps.build-image.outputs.image_name }}
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+
+    - name: Push image to Amazon ECR
+      env:
+        IMAGE_NAME: ${{ steps.build-image.outputs.image_name }}
+      run: docker push $IMAGE_NAME
 

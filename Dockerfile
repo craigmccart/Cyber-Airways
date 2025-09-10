@@ -1,5 +1,5 @@
 # --- Stage 1: Build the application ---
-FROM node:18-alpine AS builder
+FROM node:16-alpine AS builder
 WORKDIR /app
 
 # Look inside the 'frontend' subfolder for the package files
@@ -10,7 +10,7 @@ RUN npm install
 COPY frontend/. .
 
 # --- Stage 2: Create the final, smaller image ---
-FROM node:18-alpine
+FROM node:16-alpine
 WORKDIR /app
 COPY --from=builder /app .
 
